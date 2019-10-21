@@ -1,0 +1,18 @@
+---
+# replace default network with infra
+- type: replace
+  path: /instance_groups/name=alertmanager/networks/0/name
+  value: infra
+- type: replace
+  path: /instance_groups/name=prometheus2/networks/0/name
+  value: infra
+- type: replace
+  path: /instance_groups/name=grafana/networks/0/name
+  value: infra
+- type: replace
+  path: /instance_groups/name=nginx/networks/0/name
+  value: infra
+- type: replace
+  path: /instance_groups/name=database/networks/0/name
+  value: db
+

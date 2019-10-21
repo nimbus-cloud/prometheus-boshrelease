@@ -1,17 +1,17 @@
 # Alertmanager URL
 - type: replace
   path: /instance_groups/name=alertmanager/jobs/name=alertmanager/properties/alertmanager/web?/external_url
-  value: https://alertmanager.((system_domain))
+  value: https://alertmanager.((/bosh-director-test/shared/system_domain))
 
 # Prometheus URL
 - type: replace
   path: /instance_groups/name=prometheus2/jobs/name=prometheus2/properties/prometheus/web?/external_url
-  value: https://prometheus.((system_domain))
+  value: https://prometheus.((/bosh-director-test/shared/system_domain))
 
 # Grafana URL
 - type: replace
   path: /instance_groups/name=grafana/jobs/name=grafana/properties/grafana/server?/root_url
-  value: https://grafana.((system_domain))
+  value: https://grafana.((/bosh-director-test/shared/system_domain))
 
 - type: replace
   path: /instance_groups/name=grafana/jobs/name=grafana/properties/grafana/prometheus?/tls_skip_verify
@@ -42,17 +42,17 @@
             registration_interval: 20s
             port: 9093
             uris:
-              - alertmanager.((system_domain))
+              - alertmanager.((/bosh-director-test/shared/system_domain))
           - name: prometheus
             registration_interval: 20s
             port: 9090
             uris:
-              - prometheus.((system_domain))
+              - prometheus.((/bosh-director-test/shared/system_domain))
           - name: grafana
             port: 3000
             registration_interval: 60s
             uris:
-              - grafana.((system_domain))
+              - grafana.((/bosh-director-test/shared/system_domain))
 
 # Releases
 - type: replace
