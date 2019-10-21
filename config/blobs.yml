@@ -134,6 +134,9 @@ shield_exporter/shield_exporter-0.3.0.linux-amd64.tar.gz:
   size: 3696892
   object_id: 479e7d54-3fc6-4822-53bf-0e16b57e45a9
   sha: 6f1f98f54e15212f3405309f52b7666770fc15e3
+squid_exporter/squid_exporter-1.0.2.tar.gz:
+  size: 5861868
+  sha: sha256:2e0c34b238572afd4eced6331764d5ba82a9d118b46a30da71ace002671673dc
 stackdriver_exporter/stackdriver_exporter-0.6.0.linux-amd64.tar.gz:
   size: 5755060
   object_id: fa8a4c12-567d-4e94-530a-24a756879a34
