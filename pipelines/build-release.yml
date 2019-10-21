@@ -1,0 +1,149 @@
+---
+resources:
+- name: boshrelease-repo
+  type: git
+  source:
+    branch: master
+    uri: git@github.com:nimbus-cloud/((release))-boshrelease.git
+    private_key: ((github_deploy_key.private_key))
+    submodule_recursive: true
+    clean_tags: true    
+
+- name: concourse-tasks
+  type: git
+  source:
+    branch: master
+    uri: git@vdcbase.bskyb.com:nimbus/concourse-tasks.git
+    skip_ssl_verification: true
+    private_key: ((gitlab_deploy_key.private_key))
+
+- name: release
+  type: s3
+  source:
+    endpoint: ((s3_endpoint))
+    bucket: ((s3_bucket))
+    access_key_id: ((s3_access_key_id))
+    secret_access_key: ((s3_secret_access_key))
+    regexp: prometheus/prometheus-(.*).tgz
+    skip_ssl_verification: true
+
+- name: version
+  type: semver
+  source:
+    endpoint: ((s3_endpoint))
+    skip_ssl_verification: true
+    disable_ssl: true
+    bucket: ((s3_bucket))
+    key: prometheus-boshrelease/current-version
+    access_key_id: ((s3_access_key_id))
+    secret_access_key: ((s3_secret_access_key))
+    initial_version: 25.0.0
+
+- name: checksum
+  type: s3
+  source:
+    endpoint: ((s3_endpoint))
+    bucket: ((s3_bucket))
+    access_key_id: ((s3_access_key_id))
+    secret_access_key: ((s3_secret_access_key))
+    regexp: ((release))/((release))-(.*).sha1sum.txt
+    skip_ssl_verification: true
+
+
+jobs:
+- name: build-release-rc
+  public: false
+  build_logs_to_retain: 50
+  plan:
+    - in_parallel:
+      - get: boshrelease-repo
+      - get: concourse-tasks
+      - get: version
+        params:
+          pre: rc
+    - task: build-release
+      config:
+        platform: linux
+        image_resource:
+          type: registry-image
+          source:
+            repository: ((bosh_cli_image))
+        inputs:
+          - name: concourse-tasks
+          - name: boshrelease-repo
+            path: boshrelease-repo
+          - name: version
+            path: version
+        run:
+          path: concourse-tasks/create_rc_boshrelease
+        params:
+          DEPLOY_KEY: ((github_deploy_key.private_key))
+          BOSHRELEASE: ((release))
+        outputs:
+          - name: created-boshrelease
+          - name: checksum
+          - name: release-version
+    - in_parallel:
+      - put: release
+        params:
+          file: created-boshrelease/((release))-*.tgz
+      - put: version
+        params:
+          file: release-version/number
+      - put: checksum
+        params:
+          file: checksum/((release))-*-sha1sum.txt
+
+- name: build-release-final
+  public: false
+  build_logs_to_retain: 50
+  plan:
+    - in_parallel:
+      - get: boshrelease-repo
+        passed:
+          - build-release-rc
+      - get: concourse-tasks
+      - get: version
+        params:
+          bump: final
+        passed:
+        - build-release-rc
+    - task: build
+      config:
+        platform: linux
+        image_resource:
+          type: registry-image
+          source:
+            repository: ((bosh_cli_image))
+        inputs:
+          - name: concourse-tasks
+          - name: boshrelease-repo
+            path: boshrelease-repo
+          - name: version
+            path: version
+        run:
+          path: concourse-tasks/create_rc_boshrelease
+        params:
+          DEPLOY_KEY: ((github_deploy_key.private_key))
+          BOSHRELEASE: ((release))
+        outputs:
+          - name: created-boshrelease
+          - name: checksum
+          - name: release-version
+    - in_parallel:
+      - put: release
+        params:
+          file: created-boshrelease/((release))-*.tgz
+      - put: version
+        params:
+          file: release-version/number
+      - put: checksum
+        params:
+          file: checksum/((release))-*-sha1sum.txt
+
+- name: bump-major-version
+  serial_groups: [version]
+  plan:
+  - put: version
+    params:
+      bump: major

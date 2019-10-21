@@ -1,0 +1,137 @@
+---
+resource_types:
+- name: slack-notification
+  type: docker-image
+  source:
+    repository: cfcommunity/slack-notification-resource
+
+resources:
+- name: boshrelease-repo
+  type: git
+  source:
+    branch: master
+    uri: git@github.com:nimbus-cloud/((release_repo)).git
+    private_key: ((github_deploy_key.private_key))
+    submodule_recursive: true
+
+- name: concourse-tasks
+  type: git
+  source:
+    branch: master
+    uri: git@vdcbase.bskyb.com:nimbus/concourse-tasks.git
+    skip_ssl_verification: true
+    private_key: ((vdcbase_deploy_key.private_key))
+
+
+- name: checksum
+  type: s3
+  source:
+    endpoint: ((s3_endpoint))
+    bucket: ((s3_bucket))
+    access_key_id: ((s3_access_key_id))
+    secret_access_key: ((s3_secret_access_key))
+    regexp: ((release_name))/((release_name))-(.*).sha1sum.txt
+    skip_ssl_verification: true
+
+- name: slack-alert
+  type: slack-notification
+  source:
+    url: ((slack_webhook_url))
+
+- name: version
+  type: semver
+  source:
+    endpoint: ((s3_endpoint))
+    skip_ssl_verification: true
+    disable_ssl: true
+    bucket: ((s3_bucket))
+    key: ((release_name))/current-version
+    access_key_id: ((s3_access_key_id))
+    secret_access_key: ((s3_secret_access_key))
+
+jobs:
+- name: deploy-test-((deployment_name))-rc
+  public: false
+  build_logs_to_retain: 50
+  plan:
+    - aggregate:
+      - get: boshrelease-repo
+      - get: concourse-tasks
+      - get: version
+      - get: checksum
+        params:
+          file: checksum/((release_name))-*-sha1sum.txt
+    - task: deploy
+      config:
+        platform: linux
+        image_resource:
+          type: registry-image
+          source:
+            repository: ((bosh_cli_image))
+            tag: nimbus-5.3.1
+        inputs:
+          - name: boshrelease-repo
+          - name: concourse-tasks
+          - name: version
+          - name: checksum
+        run:
+          path: concourse-tasks/deploy_boshrelease
+        params:
+          DEPLOY_KEY: ((vdcbase_deploy_key.private_key))
+          BOSH_ENV: ice-test
+          BOSH_IP: ((bosh_url))
+          BOSH_USERNAME: ((bosh_username))
+          BOSH_PASSWORD: ((bosh_password))
+          BOSH_LOCATION: ((bosh.location))
+          BOSH_DEPLOYMENT: ((deployment_name))
+          RELEASES: ((release_name))
+      on_failure:
+        put: slack-alert
+        params:
+          text: "Concourse pipeline 'deploy-test-((deployment_name))-rc' is failing! <https://concourse-ci.cf.dev-paas.bskyb.com/teams/main/pipelines/((deployment_name))-deploy|Go to pipeline>."
+          channel: "#nimbus-cloud-team"
+          username: concourse
+          icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+
+- name: deploy-test-((deployment_name))-final
+  public: false
+  build_logs_to_retain: 50
+  plan:
+    - aggregate:
+      - get: boshrelease-repo
+      - get: concourse-tasks
+      - get: version
+      - get: checksum
+        params:
+          file: checksum/((release_name))-*-sha1sum.txt
+    - task: deploy
+      config:
+        platform: linux
+        image_resource:
+          type: registry-image
+          source:
+            repository: ((bosh_cli_image))
+            tag: nimbus-5.3.1
+        inputs:
+          - name: boshrelease-repo
+          - name: concourse-tasks
+          - name: version
+          - name: checksum
+        run:
+          path: concourse-tasks/deploy_boshrelease
+        params:
+          DEPLOY_KEY: ((vdcbase_deploy_key.private_key))
+          BOSH_ENV: ((bosh.test..env))-((bosh.test..datacentre))
+          BOSH_IP: ((bosh.test..ip))
+          BOSH_USERNAME: ((bosh.username))
+          BOSH_PASSWORD: ((bosh.test..password))
+          BOSH_LOCATION: ((bosh.location))
+          BOSH_DEPLOYMENT: ((deployment_name))
+          RELEASES: ((release_name))
+      on_failure:
+        put: slack-alert
+        params:
+          text: "Concourse pipeline 'deploy-test--((deployment_name))-rc' is failing! <https://concourse-ci.cf.dev-paas.bskyb.com/teams/main/pipelines/((deployment_name))-deploy|Go to pipeline>."
+          channel: "#nimbus-cloud-team"
+          username: concourse
+          icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png

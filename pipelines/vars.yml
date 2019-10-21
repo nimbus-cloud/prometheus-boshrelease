@@ -1,0 +1,2 @@
+release: prometheus
+deployment_name: prometheus
