@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+set -eux
+
+# Copy common utils
+mkdir -p ${BOSH_INSTALL_TARGET}/common
+cp -a ${BOSH_COMPILE_TARGET}/common/* ${BOSH_INSTALL_TARGET}/common
+
+# Extract squid_exporter package
+mkdir -p ${BOSH_INSTALL_TARGET}/bin
+tar xzvf ${BOSH_COMPILE_TARGET}/squid_exporter/squid_exporter-1.0.2.tar.gz
+cp -a ${BOSH_COMPILE_TARGET}/squid_exporter-1.0.2/* ${BOSH_INSTALL_TARGET}/bin

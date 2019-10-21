@@ -1,0 +1,6 @@
+---
+name: squid_exporter
+
+files:
+  - common/utils.sh
+  - squid_exporter/squid_exporter-1.0.2.tar.gz

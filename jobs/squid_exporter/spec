@@ -1,0 +1,24 @@
+---
+name: squid_exporter
+
+packages:
+  - squid_exporter
+
+templates:
+  bin/squid_exporter_ctl: bin/squid_exporter_ctl
+
+properties:
+  squid_exporter.squid.listen:
+    description: "Address and Port to bind exporter"
+    default: 127.0.0.1:9301
+  squid_exporter.squid.hostname:
+    description: "Squid hostname"
+    default: localhost
+  squid_exporter.squid.login:
+    description: "Login to squid service"
+  squid_exporter.squid.password:
+    description: "Password to squid service"
+  squid_exporter.squid.port:
+    description: "Squid port to read metrics"
+    default: 3128
+
