@@ -32,7 +32,7 @@ case $1 in
       -squid-login="<%= login %>" \
       <% end %> \
       <% if_p('squid_exporter.squid.password') do |password| %> \
-      -squid-password="<%= password %>" \
+      -squid-password='<%= password %>' \
       <% end %> \
       <% if_p('squid_exporter.squid.port') do |port| %> \
       -squid-port="<%= port %>" \
