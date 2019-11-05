@@ -7,10 +7,11 @@
     properties:
       bosh_exporter:
         bosh:
-          url: "((bosh_url))"
-          username: "((bosh_username))"
-          password: "((bosh_password))"
-          ca_cert: "((bosh_ca_cert))"
+          url: "((/bosh_url))"
+          ca_cert: "((/bosh_ca_cert.ca))"
+          uaa: 
+            client_id: "((/bosh_username.username))"
+            client_secret: "((/bosh_username.password))"
         metrics:
           environment: "((metrics_environment))"
 

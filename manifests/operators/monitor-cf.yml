@@ -10,9 +10,9 @@
     properties:
       cf_exporter:
         cf:
-          api_url: https://api.((system_domain))
+          api_url: https://api.((/bosh-director-test/shared/system_domain))
           client_id: cf_exporter
-          client_secret: "((uaa_clients_cf_exporter_secret))"
+          client_secret: "((/bosh-director-test/cf/uaa_clients_cf_exporter_secret))"
           deployment_name: ((metron_deployment_name))
         metrics:
           environment: "((metrics_environment))"
@@ -38,12 +38,12 @@
               subscription_id: "((metrics_environment))"
               max_retry_count: 300
             logging:
-              url: wss://doppler.((system_domain)):((traffic_controller_external_port))
+              url: wss://doppler.((/bosh-director-test/shared/system_domain)):((traffic_controller_external_port))
               use_legacy_firehose: true
             uaa:
-              url: https://uaa.((system_domain))
+              url: https://uaa.((/bosh-director-test/shared/system_domain))
               client_id: firehose_exporter
-              client_secret: "((uaa_clients_firehose_exporter_secret))"
+              client_secret: "((/bosh-director-test/cf/uaa_clients_firehose_exporter_secret))"
             metrics:
               environment: "((metrics_environment))"
             skip_ssl_verify: ((skip_ssl_verify))
