@@ -1,5 +1,0 @@
-cf_deployment_name: cf 
-skip_ssl_verify: false
-metrics_environment: test
-metron_deployment_name: cf 
-traffic_controller_external_port: 443
