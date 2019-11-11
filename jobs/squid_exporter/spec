@@ -10,7 +10,7 @@ templates:
 properties:
   squid_exporter.squid.listen:
     description: "Address and Port to bind exporter"
-    default: "9301"
+    default: ":9301"
   squid_exporter.squid.hostname:
     description: "Squid hostname"
     default: localhost
