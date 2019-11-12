@@ -21,8 +21,12 @@ case $1 in
     pid_guard ${PIDFILE} "vault_exporter"
     echo $$ > ${PIDFILE}
 
+    <% if_p("vault_exporter.vault_address") do |vault_exporter|
+    vault_exporter.gsub!('(index)', spec.index.to_s)
+    %>
     <% if_p('vault_exporter.vault_address') do |vault_address| %> \
     export VAULT_ADDR="<%= vault_address %>"
+    <% end %>
     <% end %>
 
     exec vault_exporter \
