@@ -32,6 +32,7 @@ properties:
     description: "When provided, this overrides the hostname for the TLS certificate. It can be used to ensure that the certificate name matches the hostname we declare"
   consul_exporter.consul_insecure:
     description: "Disable TLS host verification"
+    default: false
   consul_exporter.consul_timeout:
     description: "Timeout on HTTP requests to consul"
   consul_exporter.kv_filter:
